@@ -1,30 +1,82 @@
-# CzarCore - Modern Animated Authentication
+# CzarCore - Employee Management System
 
-A modern, animated authentication UI built with the MERN stack featuring smooth sliding transitions.
+A modern, full-stack Employee Management System built with the MERN stack featuring role-based authentication, leave management, payroll processing, and analytics dashboard.
 
-## ✨ Features
+##  Features
 
-- **Animated Split-Screen Design**: Purple gradient panel slides smoothly between sides
-- **Dual Mode Interface**: Toggle between Sign In and Sign Up with animated transitions
-- **Google Login Integration**: Ready for OAuth implementation
-- **JWT Authentication**: Secure token-based authentication
-- **Form Validation**: Client and server-side validation
-- **Responsive Design**: Mobile and tablet optimized
-- **Modern UI**: Smooth hover effects and transitions
+### Admin Features
+- **Employee Management**: Add, edit, delete, and view employee records
+- **Leave Request Management**: Approve/reject employee leave requests
+- **Holiday Calendar**: Create and manage company holidays
+- **Payroll System**: Generate payslips with salary breakdown
+- **Analytics Dashboard**: Employee statistics and department insights
+- **Advanced Search & Filtering**: Filter by department, role, and search by name
 
-## 🚀 Quick Start
+### Employee Features
+- **Personal Dashboard**: View profile and leave balance
+- **Leave Request System**: Submit and track leave requests
+- **Profile Management**: Update personal information and change password
+- **Payroll Access**: View salary breakdown and download payslips
+- **Holiday Calendar**: View company holidays
 
-1. **Install Dependencies**:
+### Additional Features
+- **Role-based Authentication**: Separate admin and employee access
+- **Responsive Design**: Mobile and desktop optimized
+- **Dark/Light Theme**: Toggle between themes
+- **Toast Notifications**: Modern, non-intrusive notifications
+- **Auto Sunday Holidays**: All Sundays marked as holidays
+- **Password Security**: Secure password change functionality
+
+##  Tech Stack
+
+- **Frontend**: React.js, Tailwind CSS
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB
+- **Authentication**: JWT (JSON Web Tokens)
+- **Password Hashing**: bcrypt
+- **Email Validation**: validator.js
+
+##  Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB (local or cloud)
+- npm or yarn
+
+## Quick Start
+
+### 1. Clone Repository
 ```bash
-npm install
-cd client && npm install
+git clone <your-repo-url>
+cd EMS
 ```
 
-2. **Start MongoDB**: Ensure MongoDB is running locally
-
-3. **Run Application**:
+### 2. Install Dependencies
 ```bash
-# Development mode (both frontend and backend)
+# Install server dependencies
+npm install
+
+# Install client dependencies
+cd client
+npm install
+cd ..
+```
+
+### 3. Environment Setup
+Create a `.env` file in the root directory:
+```env
+MONGODB_URI=mongodb://localhost:27017/CzarCore
+JWT_SECRET=your_jwt_secret_key
+PORT=5002
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+```
+
+### 4. Start MongoDB
+Make sure MongoDB is running on your system.
+
+### 5. Run Application
+```bash
+# Development mode (runs both frontend and backend)
 npm run dev
 
 # Or run separately:
@@ -32,48 +84,123 @@ npm run dev
 # Frontend: cd client && npm run dev
 ```
 
-4. **Access Application**:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
+### 6. Access Application
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5002
 
-## 📁 Project Structure
+## 👤 Default Admin Account
 
 ```
-CzarCore/
+Email: admin@czarcore.com
+Password: admin123
+```
+
+## Project Structure
+
+```
+EMS/
 ├── client/                 # React Frontend
 │   ├── src/
-│   │   ├── App.js         # Main component with animations
-│   │   ├── App.css        # Styling and animations
-│   │   └── index.js       # React entry point
+│   │   ├── components/     # React components
+│   │   ├── hooks/          # Custom hooks
+│   │   └── App.js         # Main app component
 │   └── package.json
 ├── server/
-│   └── server.js          # Express API server
+│   └── server.js          # Express server
 ├── package.json           # Root dependencies
 └── README.md
 ```
 
-## 🔧 API Endpoints
+## 🔌 API Endpoints
 
+### Authentication
 - `POST /api/register` - User registration
-- `POST /api/login` - User authentication
+- `POST /api/login` - User login
 
-## 🎨 Animation Features
+### Admin Routes
+- `GET /api/employees` - Get all employees
+- `POST /api/employees` - Create employee
+- `PUT /api/employees/:id` - Update employee
+- `DELETE /api/employees/:id` - Delete employee
+- `GET /api/leave-requests` - Get all leave requests
+- `PUT /api/leave-requests/:id` - Update leave request status
 
-- **Sliding Panel**: Purple background smoothly slides between left and right
-- **Form Transitions**: Forms fade in/out with staggered timing
-- **Hover Effects**: Buttons and inputs have smooth hover animations
-- **Mobile Responsive**: Animations adapt for mobile devices
+### Employee Routes
+- `GET /api/employee/profile` - Get employee profile
+- `POST /api/employee/leave-requests` - Submit leave request
+- `GET /api/employee/my-leave-requests` - Get own leave requests
+- `PUT /api/employee/change-password` - Change password
 
-## 🛡️ Security Features
+### Holiday Routes
+- `GET /api/holidays` - Get holidays
+- `POST /api/holidays` - Create holiday
+- `PUT /api/holidays/:id` - Update holiday
+- `DELETE /api/holidays/:id` - Delete holiday
 
+## Key Features Explained
+
+### Role-Based Access Control
+- **Admin**: Full system access including employee management
+- **Employee**: Limited access to personal data and leave requests
+
+### Automatic Employee Setup
+- Auto-generated Employee ID and work email
+- Password generated from date of birth (DDMMYYYY format)
+- Default 20 annual leaves assigned
+
+### Leave Management
+- Multiple leave types (Casual, Sick, Annual, Emergency)
+- Automatic leave balance calculation
+- Admin approval workflow
+
+### Payroll System
+- Salary breakdown with PF (12%) and Tax (10%) deductions
+- Professional payslip generation
+- Downloadable and printable payslips
+
+##  Security Features
+
+- JWT token-based authentication
 - Password hashing with bcrypt (12 rounds)
-- JWT tokens with 24-hour expiration
-- Email validation
-- Duplicate user prevention
-- Input sanitization
+- Input validation and sanitization
+- Role-based route protection
+- Secure password change functionality
 
-## 📱 Responsive Design
+##  Responsive Design
 
-- Desktop: Split-screen layout
-- Tablet/Mobile: Stacked layout with adapted animations
-- Touch-friendly interface elements
+- Mobile-first approach
+- Tablet and desktop optimized
+- Touch-friendly interface
+- Adaptive layouts
+
+##  Deployment
+
+### Frontend (Netlify/Vercel)
+1. Build the client: `cd client && npm run build`
+2. Deploy the `build` folder
+
+### Backend (Railway/Render/Heroku)
+1. Set environment variables
+2. Deploy the root directory
+
+### Database (MongoDB Atlas)
+1. Create MongoDB Atlas cluster
+2. Update MONGODB_URI in environment variables
+
+##  Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+
+
+
+
+**Built with  using MERN Stack**

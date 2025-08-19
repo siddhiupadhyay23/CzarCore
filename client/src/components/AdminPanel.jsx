@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Toast from './Toast';
+import { useToast } from '../hooks/useToast';
 
 function AdminPanel() {
   const [theme, setTheme] = useState('light');
@@ -102,6 +104,7 @@ function AdminPanel() {
     onConfirm: null,
     showCancel: false
   });
+  const { toasts, showToast, removeToast } = useToast();
 
   // Generate professional payslip with CzarCore letterhead
   const generatePayslip = (employee, bonus = 0) => {
@@ -165,13 +168,27 @@ function AdminPanel() {
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
     
-    // Load admin profile from localStorage
-    const savedProfile = localStorage.getItem('adminProfile');
-    if (savedProfile) {
-      try {
-        setAdminProfile(JSON.parse(savedProfile));
-      } catch (error) {
-        console.error('Error loading admin profile:', error);
+    // Load current admin user data
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (currentUser && currentUser.id) {
+      // Try to load user-specific profile first
+      const savedProfile = localStorage.getItem(`adminProfile_${currentUser.id}`);
+      if (savedProfile) {
+        try {
+          setAdminProfile(JSON.parse(savedProfile));
+        } catch (error) {
+          console.error('Error loading admin profile:', error);
+        }
+      } else {
+        // Set default profile for new admin
+        setAdminProfile({
+          name: currentUser.name || 'Admin User',
+          email: currentUser.email || 'admin@czarcore.com',
+          phone: '+1 234 567 8900',
+          department: 'Administration',
+          bio: 'System Administrator managing CzarCore Employee Management System.',
+          photo: null
+        });
       }
     }
     
@@ -189,9 +206,12 @@ function AdminPanel() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Save admin profile to localStorage whenever it changes
+  // Save admin profile to localStorage with user-specific key
   useEffect(() => {
-    localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (currentUser && currentUser.id) {
+      localStorage.setItem(`adminProfile_${currentUser.id}`, JSON.stringify(adminProfile));
+    }
   }, [adminProfile]);
 
   const toggleTheme = () => {
@@ -203,8 +223,12 @@ function AdminPanel() {
   };
 
   const showPopup = (type, title, message, onConfirm = null, showCancel = false) => {
-    setModalConfig({ type, title, message, onConfirm, showCancel });
-    setShowModal(true);
+    if (showCancel || onConfirm) {
+      setModalConfig({ type, title, message, onConfirm, showCancel });
+      setShowModal(true);
+    } else {
+      showToast(message, type);
+    }
   };
 
   const closeModal = () => {
@@ -480,10 +504,18 @@ function AdminPanel() {
 
   const getHolidayForDate = (day) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return holidaysArray.find(holiday => {
+    const holiday = holidaysArray.find(holiday => {
       const holidayDate = new Date(holiday.date).toISOString().split('T')[0];
       return holidayDate === dateStr;
     });
+    
+    // Check if it's Sunday
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    if (date.getDay() === 0) {
+      return holiday || { name: 'Sunday', type: 'weekly' };
+    }
+    
+    return holiday;
   };
 
   const navigateMonth = (direction) => {
@@ -597,7 +629,7 @@ function AdminPanel() {
       if (response.ok) {
         await fetchEmployees();
         resetForm();
-        showPopup('success', 'Success!', `Employee ${editingEmployee ? 'updated' : 'added'} successfully!`);
+        showToast(`Employee ${editingEmployee ? 'updated' : 'added'} successfully!`, 'success');
       } else {
         // Handle specific server errors
         if (response.status === 400) {
@@ -1184,17 +1216,22 @@ function AdminPanel() {
                     const holiday = getHolidayForDate(day);
                     const today = isToday(day);
 
+                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const isSunday = date.getDay() === 0;
+                    
                     return (
                       <div
                         key={day}
-                        onClick={() => openHolidayModal(day)}
-                        className={`p-3 text-center cursor-pointer rounded-lg transition-all duration-200 relative ${
+                        onClick={() => !isSunday && openHolidayModal(day)}
+                        className={`p-3 text-center rounded-lg transition-all duration-200 relative ${
+                          isSunday ? 'cursor-default' : 'cursor-pointer'
+                        } ${
                           today
                             ? 'bg-blue-600 text-white font-bold'
-                            : holiday
+                            : holiday || isSunday
                             ? theme === 'dark'
-                              ? 'bg-red-700 text-white hover:bg-red-600'
-                              : 'bg-red-100 text-red-800 hover:bg-red-200'
+                              ? isSunday ? 'bg-purple-700 text-white' : 'bg-red-700 text-white hover:bg-red-600'
+                              : isSunday ? 'bg-purple-100 text-purple-800' : 'bg-red-100 text-red-800 hover:bg-red-200'
                             : theme === 'dark'
                             ? 'hover:bg-gray-700 text-gray-300'
                             : 'hover:bg-gray-100 text-gray-700'
@@ -1226,6 +1263,12 @@ function AdminPanel() {
                       theme === 'dark' ? 'bg-red-700' : 'bg-red-100'
                     }`}></div>
                     <span>Holiday</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded ${
+                      theme === 'dark' ? 'bg-purple-700' : 'bg-purple-100'
+                    }`}></div>
+                    <span>Sunday</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-4 h-4 rounded border-2 border-dashed ${
@@ -2722,7 +2765,10 @@ function AdminPanel() {
                       <div className="mt-4 flex gap-3">
                         <button
                           onClick={() => {
-                            localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
+                            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                            if (currentUser && currentUser.id) {
+                              localStorage.setItem(`adminProfile_${currentUser.id}`, JSON.stringify(adminProfile));
+                            }
                             showPopup('success', 'Success!', 'Profile updated successfully!');
                           }}
                           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
@@ -2734,9 +2780,10 @@ function AdminPanel() {
                         </button>
                         <button
                           onClick={() => {
+                            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
                             setAdminProfile({
-                              name: 'Admin User',
-                              email: 'admin@czarcore.com',
+                              name: currentUser.name || 'Admin User',
+                              email: currentUser.email || 'admin@czarcore.com',
                               phone: '+1 234 567 8900',
                               department: 'Administration',
                               bio: 'System Administrator managing CzarCore Employee Management System.',
@@ -3179,6 +3226,17 @@ function AdminPanel() {
           </div>
         </div>
       )}
+      
+      {/* Toast Notifications */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 }

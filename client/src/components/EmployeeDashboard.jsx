@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Toast from './Toast';
+import { useToast } from '../hooks/useToast';
 
 function EmployeeDashboard() {
   const [user, setUser] = useState(null);
@@ -20,6 +22,13 @@ function EmployeeDashboard() {
     reason: ''
   });
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const { toasts, showToast, removeToast } = useToast();
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -115,9 +124,12 @@ function EmployeeDashboard() {
       });
       
       if (response.ok) {
-        alert('Leave request submitted successfully!');
+        showToast('Leave request submitted successfully!', 'success');
         setLeaveFormData({ leaveType: 'casual', fromDate: '', toDate: '', reason: '' });
         fetchMyLeaveRequests();
+      } else {
+        const data = await response.json();
+        showToast(data.message || 'Error submitting leave request', 'error');
       }
     } catch (error) {
       console.error('Error submitting leave request:', error);
@@ -154,12 +166,50 @@ function EmployeeDashboard() {
       });
       
       if (response.ok) {
-        alert('Profile updated successfully!');
+        showToast('Profile updated successfully!', 'success');
         setIsEditingProfile(false);
         fetchEmployeeProfile();
+      } else {
+        const data = await response.json();
+        showToast(data.message || 'Error updating profile', 'error');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast('New passwords do not match', 'warning');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5002/api/employee/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        showToast('Password changed successfully!', 'success');
+        setShowPasswordModal(false);
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        showToast(data.message || 'Error changing password', 'error');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      showToast('Error changing password', 'error');
     }
   };
 
@@ -185,10 +235,18 @@ function EmployeeDashboard() {
 
   const getHolidayForDate = (day) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return holidays.find(holiday => {
+    const holiday = holidays.find(holiday => {
       const holidayDate = new Date(holiday.date).toISOString().split('T')[0];
       return holidayDate === dateStr;
     });
+    
+    // Check if it's Sunday
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    if (date.getDay() === 0) {
+      return holiday || { name: 'Sunday', type: 'weekly' };
+    }
+    
+    return holiday;
   };
 
   const navigateMonth = (direction) => {
@@ -541,8 +599,8 @@ function EmployeeDashboard() {
                   </div>
                 </div>
 
-                {/* Edit Profile Button */}
-                <div className="flex justify-center mt-6 pt-6 border-t">
+                {/* Action Buttons */}
+                <div className="flex justify-center gap-4 mt-6 pt-6 border-t">
                   <button
                     onClick={handleEditProfile}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -551,6 +609,15 @@ function EmployeeDashboard() {
                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                     </svg>
                     Edit Profile
+                  </button>
+                  <button
+                    onClick={() => setShowPasswordModal(true)}
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    Change Password
                   </button>
                 </div>
               </div>
@@ -607,6 +674,72 @@ function EmployeeDashboard() {
                       <button
                         type="button"
                         onClick={() => setIsEditingProfile(false)}
+                        className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+                          theme === 'dark'
+                            ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Change Password Modal */}
+          {showPasswordModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-2xl max-w-md w-full`}>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-4 text-green-600">Change Password</h3>
+                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Current Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                        className={`w-full p-3 border rounded-lg ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">New Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                        className={`w-full p-3 border rounded-lg ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+                        minLength="6"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                        className={`w-full p-3 border rounded-lg ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Change Password
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPasswordModal(false);
+                          setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                        }}
                         className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
                           theme === 'dark'
                             ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
@@ -966,16 +1099,19 @@ function EmployeeDashboard() {
                     const holiday = getHolidayForDate(day);
                     const today = isToday(day);
 
+                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const isSunday = date.getDay() === 0;
+                    
                     return (
                       <div
                         key={day}
                         className={`p-3 text-center rounded-lg transition-all duration-200 relative ${
                           today
                             ? 'bg-blue-600 text-white font-bold'
-                            : holiday
+                            : holiday || isSunday
                             ? theme === 'dark'
-                              ? 'bg-red-700 text-white'
-                              : 'bg-red-100 text-red-800'
+                              ? isSunday ? 'bg-purple-700 text-white' : 'bg-red-700 text-white'
+                              : isSunday ? 'bg-purple-100 text-purple-800' : 'bg-red-100 text-red-800'
                             : theme === 'dark'
                             ? 'text-gray-300'
                             : 'text-gray-700'
@@ -1007,6 +1143,12 @@ function EmployeeDashboard() {
                       theme === 'dark' ? 'bg-red-700' : 'bg-red-100'
                     }`}></div>
                     <span>Holiday</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded ${
+                      theme === 'dark' ? 'bg-purple-700' : 'bg-purple-100'
+                    }`}></div>
+                    <span>Sunday</span>
                   </div>
                 </div>
               </div>
@@ -1100,10 +1242,39 @@ function EmployeeDashboard() {
                   </div>
                 </div>
               </div>
+              
+              <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-md`}>
+                <h3 className="text-lg font-semibold mb-4 text-green-600">Security</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">Password</h4>
+                      <p className="text-sm text-gray-500">Change your account password</p>
+                    </div>
+                    <button
+                      onClick={() => setShowPasswordModal(true)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Change Password
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Toast Notifications */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 }
