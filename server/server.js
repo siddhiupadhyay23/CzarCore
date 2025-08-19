@@ -18,7 +18,10 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/CzarCore', {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  maxPoolSize: 10
 })
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => console.error('MongoDB connection error:', err));
@@ -578,7 +581,7 @@ app.post('/api/employees', verifyToken, verifyAdmin, async (req, res) => {
       userId: user._id,
       phone: phone || '',
       address: address || '',
-      salary: salary || null
+      salary: salary !== undefined && salary !== '' ? Number(salary) : null
     });
 
     await employee.save();
@@ -593,6 +596,11 @@ app.put('/api/employees/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { name, email, password, availableLeaves, dateOfJoining, employeeId, dateOfBirth, department, position, role, phone, address, profilePhoto, salary } = req.body;
     
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
     const updateData = {
       name,
       personalEmail: email,
@@ -607,14 +615,9 @@ app.put('/api/employees/:id', verifyToken, verifyAdmin, async (req, res) => {
       phone: phone || '',
       address: address || '',
       profilePhoto: profilePhoto || '',
-      salary: salary || null,
+      salary: salary !== undefined && salary !== '' ? Number(salary) : employee.salary,
       updatedAt: new Date()
     };
-
-    const employee = await Employee.findById(req.params.id);
-    if (!employee) {
-      return res.status(404).json({ message: 'Employee not found' });
-    }
 
     if (password) {
       updateData.workPassword = password;
@@ -835,6 +838,14 @@ app.put('/api/employee/change-password', verifyToken, async (req, res) => {
 // Create default admin account if none exists
 const createDefaultAdmin = async () => {
   try {
+    // Wait for MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      console.log('Waiting for MongoDB connection...');
+      await new Promise(resolve => {
+        mongoose.connection.once('connected', resolve);
+      });
+    }
+    
     const adminCount = await User.countDocuments({ role: 'admin' });
     if (adminCount === 0) {
       const hashedPassword = await bcrypt.hash('admin123', 12);
@@ -857,6 +868,14 @@ const createDefaultAdmin = async () => {
 // Add sample holidays if none exist
 const addSampleHolidays = async () => {
   try {
+    // Wait for MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      console.log('Waiting for MongoDB connection...');
+      await new Promise(resolve => {
+        mongoose.connection.once('connected', resolve);
+      });
+    }
+    
     const holidayCount = await Holiday.countDocuments();
     if (holidayCount === 0) {
       const sampleHolidays = [
@@ -876,9 +895,23 @@ const addSampleHolidays = async () => {
 
 
 
+// Global error handler
+app.use((error, req, res, next) => {
+  console.error('Server Error:', error);
+  res.status(500).json({ 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+  });
+});
+
 const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
   console.log(`CzarCore server running on port ${PORT}`);
-  createDefaultAdmin();
-  addSampleHolidays();
+  
+  // Initialize default data after connection is established
+  mongoose.connection.once('connected', () => {
+    console.log('MongoDB connection established, initializing default data...');
+    createDefaultAdmin();
+    addSampleHolidays();
+  });
 });

@@ -342,7 +342,7 @@ function EmployeeDashboard() {
                 {activeTab === 'holidays' && 'Holiday Calendar'}
                 {activeTab === 'settings' && 'Settings'}
               </h1>
-              <p className="text-gray-500">Employee Dashboard</p>
+              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Employee Dashboard</p>
             </div>
             
             {/* Employee Profile Header */}
@@ -350,7 +350,7 @@ function EmployeeDashboard() {
               <div className="flex items-center gap-3">
                 <div className="text-right hidden md:block">
                   <p className="font-medium">{employeeProfile.name}</p>
-                  <p className="text-sm text-gray-500">{employeeProfile.position}</p>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{employeeProfile.position}</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg cursor-pointer" onClick={() => setActiveTab('profile')}>
                   {employeeProfile.profilePhoto && employeeProfile.profilePhoto.trim() !== '' ? (
@@ -389,7 +389,7 @@ function EmployeeDashboard() {
                   <div>
                     <h3 className="text-lg font-medium mb-2">Available Leave Balance</h3>
                     <p className="text-4xl font-bold">{employeeProfile?.availableLeaves || 0} days</p>
-                    <p className="text-green-100 mt-1">Remaining for this year</p>
+                    <p className={`mt-1 ${theme === 'dark' ? 'text-green-200' : 'text-green-100'}`}>Remaining for this year</p>
                   </div>
                   <div className="text-6xl opacity-20">
                     📅
@@ -471,25 +471,25 @@ function EmployeeDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                   <div className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-blue-50'} p-4 rounded-lg text-center`}>
                     <div className="text-2xl font-bold text-blue-600">{employeeProfile.availableLeaves}</div>
-                    <div className="text-sm text-gray-500">Available Leaves</div>
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Available Leaves</div>
                   </div>
                   <div className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-green-50'} p-4 rounded-lg text-center`}>
                     <div className="text-2xl font-bold text-green-600">
                       {employeeProfile.dateOfJoining ? Math.floor((new Date() - new Date(employeeProfile.dateOfJoining)) / (1000 * 60 * 60 * 24 * 365)) : 0}
                     </div>
-                    <div className="text-sm text-gray-500">Years of Service</div>
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Years of Service</div>
                   </div>
                   <div className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-purple-50'} p-4 rounded-lg text-center`}>
                     <div className="text-2xl font-bold text-purple-600">
                       {employeeProfile.dateOfBirth ? Math.floor((new Date() - new Date(employeeProfile.dateOfBirth)) / (1000 * 60 * 60 * 24 * 365)) : 0}
                     </div>
-                    <div className="text-sm text-gray-500">Age</div>
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Age</div>
                   </div>
                   <div className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-orange-50'} p-4 rounded-lg text-center`}>
                     <div className="text-2xl font-bold text-orange-600">
                       {Array.isArray(myLeaveRequests) ? myLeaveRequests.filter(req => req.status === 'approved').length : 0}
                     </div>
-                    <div className="text-sm text-gray-500">Approved Leaves</div>
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Approved Leaves</div>
                   </div>
                 </div>
 
@@ -885,19 +885,19 @@ function EmployeeDashboard() {
                   <div className="space-y-4">
                     <h4 className="font-semibold text-green-600">Earnings</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between p-3 bg-green-50 rounded">
+                      <div className={`flex justify-between p-3 rounded ${theme === 'dark' ? 'bg-green-800 text-white' : 'bg-green-50 text-gray-900'}`}>
                         <span>Basic Salary:</span>
                         <span className="font-semibold">₹{employeeProfile.salary ? employeeProfile.salary.toLocaleString() : 0}</span>
                       </div>
-                      <div className="flex justify-between p-3 bg-blue-50 rounded">
+                      <div className={`flex justify-between p-3 rounded ${theme === 'dark' ? 'bg-blue-800 text-white' : 'bg-blue-50 text-gray-900'}`}>
                         <span>Allowances:</span>
                         <span className="font-semibold">₹0</span>
                       </div>
-                      <div className="flex justify-between p-3 bg-purple-50 rounded">
+                      <div className={`flex justify-between p-3 rounded ${theme === 'dark' ? 'bg-purple-800 text-white' : 'bg-purple-50 text-gray-900'}`}>
                         <span>Bonus:</span>
                         <span className="font-semibold">₹0</span>
                       </div>
-                      <div className="flex justify-between p-3 bg-green-100 rounded font-bold">
+                      <div className={`flex justify-between p-3 rounded font-bold ${theme === 'dark' ? 'bg-green-700 text-white' : 'bg-green-100 text-gray-900'}`}>
                         <span>Gross Salary:</span>
                         <span>₹{employeeProfile.salary ? employeeProfile.salary.toLocaleString() : 0}</span>
                       </div>
@@ -907,19 +907,19 @@ function EmployeeDashboard() {
                   <div className="space-y-4">
                     <h4 className="font-semibold text-red-600">Deductions</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between p-3 bg-red-50 rounded">
+                      <div className={`flex justify-between p-3 rounded ${theme === 'dark' ? 'bg-red-800 text-white' : 'bg-red-50 text-gray-900'}`}>
                         <span>PF (12%):</span>
                         <span className="font-semibold">₹{employeeProfile.salary ? Math.round(employeeProfile.salary * 0.12).toLocaleString() : 0}</span>
                       </div>
-                      <div className="flex justify-between p-3 bg-orange-50 rounded">
+                      <div className={`flex justify-between p-3 rounded ${theme === 'dark' ? 'bg-orange-800 text-white' : 'bg-orange-50 text-gray-900'}`}>
                         <span>Tax (10%):</span>
                         <span className="font-semibold">₹{employeeProfile.salary ? Math.round(employeeProfile.salary * 0.1).toLocaleString() : 0}</span>
                       </div>
-                      <div className="flex justify-between p-3 bg-gray-50 rounded">
+                      <div className={`flex justify-between p-3 rounded ${theme === 'dark' ? 'bg-gray-600 text-white' : 'bg-gray-50 text-gray-900'}`}>
                         <span>Other Deductions:</span>
                         <span className="font-semibold">₹0</span>
                       </div>
-                      <div className="flex justify-between p-3 bg-red-100 rounded font-bold">
+                      <div className={`flex justify-between p-3 rounded font-bold ${theme === 'dark' ? 'bg-red-700 text-white' : 'bg-red-100 text-gray-900'}`}>
                         <span>Total Deductions:</span>
                         <span>₹{employeeProfile.salary ? Math.round(employeeProfile.salary * 0.22).toLocaleString() : 0}</span>
                       </div>
@@ -1044,7 +1044,7 @@ function EmployeeDashboard() {
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
                   <div>
                     <h2 className="text-2xl font-semibold text-blue-600">Holiday Calendar</h2>
-                    <p className="text-gray-500">View company holidays</p>
+                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>View company holidays</p>
                   </div>
                 </div>
 
@@ -1170,7 +1170,7 @@ function EmployeeDashboard() {
                       }`}>
                         <div>
                           <h4 className="font-medium">{holiday.name}</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             {new Date(holiday.date).toLocaleDateString('en-US', { 
                               weekday: 'long', 
                               year: 'numeric', 
@@ -1191,7 +1191,7 @@ function EmployeeDashboard() {
                     return holidayDate.getMonth() === currentDate.getMonth() && 
                            holidayDate.getFullYear() === currentDate.getFullYear();
                   }).length === 0 && (
-                    <p className="text-gray-500 text-center py-4">No holidays in this month</p>
+                    <p className={`text-center py-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>No holidays in this month</p>
                   )}
                 </div>
               </div>
@@ -1225,7 +1225,7 @@ function EmployeeDashboard() {
                       {theme === 'light' ? 'Light' : 'Dark'}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500">Choose between light and dark mode</p>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Choose between light and dark mode</p>
                 </div>
               </div>
               
@@ -1249,7 +1249,7 @@ function EmployeeDashboard() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-medium">Password</h4>
-                      <p className="text-sm text-gray-500">Change your account password</p>
+                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Change your account password</p>
                     </div>
                     <button
                       onClick={() => setShowPasswordModal(true)}

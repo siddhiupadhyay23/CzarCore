@@ -72,7 +72,7 @@ EMAIL_PASS=your_app_password
 ```
 
 ### 4. Start MongoDB
-Make sure MongoDB is running on your system.
+Make sure MongoDB is running on your system or verify your MongoDB Atlas connection.
 
 ### 5. Run Application
 ```bash
@@ -83,6 +83,36 @@ npm run dev
 # Backend: npm start
 # Frontend: cd client && npm run dev
 ```
+
+## 🔧 Troubleshooting
+
+### MongoDB Connection Issues
+If you encounter MongoDB connection timeouts:
+
+1. **Local MongoDB**: Ensure MongoDB service is running
+   ```bash
+   # Windows
+   net start MongoDB
+   
+   # macOS/Linux
+   sudo systemctl start mongod
+   ```
+
+2. **MongoDB Atlas**: Check your connection string in `.env`
+   - Verify username/password
+   - Ensure IP whitelist includes your current IP
+   - Check network connectivity
+
+3. **Connection String Format**:
+   ```
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+   ```
+
+### Common Fixes
+- Clear npm cache: `npm cache clean --force`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
+- Check firewall settings
+- Verify environment variables in `.env` file
 
 ### 6. Access Application
 - **Frontend**: http://localhost:3000
