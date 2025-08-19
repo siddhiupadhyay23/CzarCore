@@ -1,7 +1,5 @@
 const config = {
-  API_URL: process.env.NODE_ENV === 'production' 
-    ? 'https://czarcore.onrender.com/api'
-    : '/api'
+  API_URL: '/api'
 };
 
 export default config;
