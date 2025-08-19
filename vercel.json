@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "client/build",
   "functions": {
     "server/server.js": {
       "runtime": "@vercel/node"
@@ -7,8 +9,12 @@
   },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "destination": "/server/server.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/client/build/index.html"
     }
   ]
 }
