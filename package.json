@@ -4,8 +4,8 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "build": "cd client && npm install && npm run build && cd .. && xcopy client\\build build /E /I /Y",
-    "vercel-build": "cd client && npm install && npm run build && cd .. && xcopy client\\build build /E /I /Y",
+    "build": "cd client && npm install && npm run build && cd .. && node copy-build.js",
+    "vercel-build": "cd client && npm install && npm run build && cd .. && node copy-build.js",
     "build-client": "cd client && npm install && npx react-scripts build",
     "install-client": "cd client && npm install"
   },
