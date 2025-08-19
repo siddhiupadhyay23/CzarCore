@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://*.netlify.app'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -876,17 +876,9 @@ const addSampleHolidays = async () => {
 
 
 
-// Initialize default data
-createDefaultAdmin();
-addSampleHolidays();
-
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5002;
-  app.listen(PORT, () => {
-    console.log(`CzarCore server running on port ${PORT}`);
-  });
-}
-
-// Export for Vercel
-module.exports = app;
+const PORT = process.env.PORT || 5002;
+app.listen(PORT, () => {
+  console.log(`CzarCore server running on port ${PORT}`);
+  createDefaultAdmin();
+  addSampleHolidays();
+});
