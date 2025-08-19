@@ -876,9 +876,17 @@ const addSampleHolidays = async () => {
 
 
 
-const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => {
-  console.log(`CzarCore server running on port ${PORT}`);
-  createDefaultAdmin();
-  addSampleHolidays();
-});
+// Initialize default data
+createDefaultAdmin();
+addSampleHolidays();
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5002;
+  app.listen(PORT, () => {
+    console.log(`CzarCore server running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel
+module.exports = app;
