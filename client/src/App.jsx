@@ -1,10 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import axios from 'axios';
+import config from './config';
 import Navbar from './components/Navbar.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import AuthPage from './components/AuthPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
+
+// Set axios base URL
+axios.defaults.baseURL = config.API_URL;
 function App() {
   return (
     <Router>
