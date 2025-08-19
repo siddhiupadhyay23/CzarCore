@@ -20,6 +20,7 @@
     "vercel-build": "npx react-scripts build",
     "prebuild": "npm install"
   },
+  "homepage": "./",
   "proxy": "http://localhost:5002",
   "browserslist": {
     "production": [

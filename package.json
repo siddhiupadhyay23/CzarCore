@@ -4,8 +4,8 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "build": "cd client && npm install && npm run build && cd .. && node copy-build.js",
-    "vercel-build": "cd client && npm install && npm run build && cd .. && node copy-build.js",
+    "build": "cd client && npm install && cross-env BUILD_PATH=../build npm run build",
+    "vercel-build": "cd client && npm install && cross-env BUILD_PATH=../build npm run build",
     "build-client": "cd client && npm install && npx react-scripts build",
     "install-client": "cd client && npm install"
   },
@@ -22,5 +22,8 @@
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0"
   }
 }
