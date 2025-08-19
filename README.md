@@ -91,8 +91,7 @@ npm run dev
 ## 👤 Default Admin Account
 
 ```
-Email: admin@czarcore.com
-Password: admin123
+
 ```
 
 ## Project Structure
