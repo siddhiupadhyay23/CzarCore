@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "main": "server/server.js",
   "scripts": {
-    "start": "node start.js",
+    "start": "node server/server.js",
     "dev": "concurrently \"npm start\" \"cd client && npm run dev\"",
-    "server": "node start.js",
-    "server-direct": "node server/server.js",
+    "server": "node server/server.js",
     "client": "cd client && npm run dev"
   },
   "dependencies": {
