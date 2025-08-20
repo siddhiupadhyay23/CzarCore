@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://czarcore.netlify.app', /\.netlify\.app$/],
+  origin: ['http://localhost:3000', 'https://czarcore.netlify.app', 'https://68a585a799505d03b917e555--czarcore.netlify.app', /\.netlify\.app$/],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
