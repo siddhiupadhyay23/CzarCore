@@ -160,6 +160,7 @@ app.post('/api/register', async (req, res) => {
         availableLeaves: 20,
         department: 'General', // Default department
         position: 'Employee',
+        role: 'Employee', // Add required role field
         workPassword: password,
         userId: user._id
       });
