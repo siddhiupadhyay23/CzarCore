@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
 
@@ -238,9 +239,8 @@ function AdminPanel() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:5002/api/employees');
-      const data = await response.json();
-      setEmployees(data);
+      const response = await axios.get('/employees');
+      setEmployees(response.data);
     } catch (error) {
       showPopup('error', 'Error', 'Failed to fetch employees data.');
     }
@@ -248,9 +248,8 @@ function AdminPanel() {
 
   const fetchHolidays = async () => {
     try {
-      const response = await fetch('http://localhost:5002/api/holidays');
-      const data = await response.json();
-      setHolidays(data);
+      const response = await axios.get('/holidays');
+      setHolidays(response.data);
     } catch (error) {
       showPopup('error', 'Error', 'Failed to fetch holidays data.');
     }
@@ -258,9 +257,8 @@ function AdminPanel() {
 
   const fetchLeaveRequests = async () => {
     try {
-      const response = await fetch('http://localhost:5002/api/leave-requests');
-      const data = await response.json();
-      setLeaveRequests(data);
+      const response = await axios.get('/leave-requests');
+      setLeaveRequests(response.data);
     } catch (error) {
       showPopup('error', 'Error', 'Failed to fetch leave requests data.');
     }
@@ -598,11 +596,6 @@ function AdminPanel() {
         throw new Error('Authentication token not found');
       }
       
-      const url = editingEmployee 
-        ? `http://localhost:5002/api/employees/${editingEmployee._id}`
-        : 'http://localhost:5002/api/employees';
-      const method = editingEmployee ? 'PUT' : 'POST';
-      
       // Sanitize form data before sending
       const sanitizedData = {
         ...formData,
@@ -615,42 +608,43 @@ function AdminPanel() {
         address: formData.address?.trim() || ''
       };
       
-      const response = await fetch(url, {
-        method,
+      const config = {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(sanitizedData),
-      });
+        }
+      };
       
-      const data = await response.json();
+      let response;
+      if (editingEmployee) {
+        response = await axios.put(`/employees/${editingEmployee._id}`, sanitizedData, config);
+      } else {
+        response = await axios.post('/employees', sanitizedData, config);
+      }
       
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         await fetchEmployees();
         resetForm();
         showToast(`Employee ${editingEmployee ? 'updated' : 'added'} successfully!`, 'success');
-      } else {
-        // Handle specific server errors
-        if (response.status === 400) {
-          showPopup('error', 'Invalid Data', data.message || 'Invalid data provided. Please check your inputs.');
-        } else if (response.status === 401) {
+      }
+    } catch (error) {
+      console.error('Error saving employee:', error);
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message;
+        if (status === 400) {
+          showPopup('error', 'Invalid Data', message || 'Invalid data provided. Please check your inputs.');
+        } else if (status === 401) {
           showPopup('error', 'Authentication Failed', 'Please login again.', () => {
             localStorage.removeItem('token');
             window.location.href = '/auth';
           });
-        } else if (response.status === 409) {
+        } else if (status === 409) {
           showPopup('error', 'Duplicate Entry', 'Employee with this email or ID already exists.');
         } else {
-          showPopup('error', 'Error', data.message || 'Error saving employee. Please try again.');
+          showPopup('error', 'Error', message || 'Error saving employee. Please try again.');
         }
-      }
-    } catch (error) {
-      console.error('Error saving employee:', error);
-      if (error.message.includes('fetch')) {
-        showPopup('error', 'Network Error', 'Please check your connection and try again.');
       } else {
-        showPopup('error', 'Unexpected Error', 'An unexpected error occurred. Please try again.');
+        showPopup('error', 'Network Error', 'Please check your connection and try again.');
       }
     } finally {
       setIsSubmitting(false);
