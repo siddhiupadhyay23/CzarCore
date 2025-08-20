@@ -9,11 +9,39 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
+// More permissive CORS for production deployment
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://czarcore.netlify.app', 'https://68a585a799505d03b917e555--czarcore.netlify.app', /\.netlify\.app$/, /\.vercel\.app$/],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost')) return callback(null, true);
+    
+    // Allow Netlify deployments
+    if (origin.includes('netlify.app')) return callback(null, true);
+    
+    // Allow Vercel deployments
+    if (origin.includes('vercel.app')) return callback(null, true);
+    
+    // Allow specific production domains
+    const allowedOrigins = [
+      'https://czarcore.netlify.app',
+      'https://68a585a799505d03b917e555--czarcore.netlify.app'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // For debugging - log rejected origins
+    console.log('CORS rejected origin:', origin);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  optionsSuccessStatus: 200
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
