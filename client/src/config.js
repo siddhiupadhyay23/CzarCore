@@ -1,5 +1,5 @@
 const config = {
-  API_URL: 'https://czarcore.onrender.com'
+  API_URL: 'https://czarcore.onrender.com/api'
 };
 
 // Debug log
