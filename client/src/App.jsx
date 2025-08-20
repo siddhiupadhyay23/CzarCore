@@ -8,8 +8,18 @@ import AuthPage from './components/AuthPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
 
-// Set axios base URL
+// Set axios base URL and add error interceptor
 axios.defaults.baseURL = config.API_URL;
+axios.defaults.timeout = 10000;
+
+// Add response interceptor for better error handling
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
 function App() {
   return (
     <Router>
