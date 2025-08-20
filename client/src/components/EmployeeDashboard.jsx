@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
 
@@ -63,9 +64,8 @@ function EmployeeDashboard() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:5002/api/employees');
-      const data = await response.json();
-      setEmployees(data);
+      const response = await axios.get('/employees');
+      setEmployees(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }

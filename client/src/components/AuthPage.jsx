@@ -30,7 +30,7 @@ function AuthPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = isSignUp ? 'http://localhost:5002/api/register' : 'http://localhost:5002/api/login';
+      const endpoint = isSignUp ? '/register' : '/login';
       const data = isSignUp ? formData : { email: formData.email, password: formData.password };
       
       const response = await axios.post(endpoint, data);
@@ -49,7 +49,7 @@ function AuthPage() {
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5002/api/forgot-password', { email: forgotEmail });
+      const response = await axios.post('/forgot-password', { email: forgotEmail });
       setMessage(response.data.message);
       setShowForgotPassword(false);
     } catch (error) {
@@ -60,7 +60,7 @@ function AuthPage() {
   const handleGoogleLogin = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    window.location.href = 'http://localhost:5002/api/auth/google';
+    window.location.href = 'https://czarcore.onrender.com/api/auth/google';
   };
 
   const toggleMode = () => {
